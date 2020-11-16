@@ -1,0 +1,13 @@
+tensorflow-gpu==1.14.0
+keras==2.2.4
+h5py==2.10.0
+numpy==1.16.4
+imgaug
+pandas
+tqdm
+pillow
+opencv-python
+matplotlib
+jupyter
+scikit-learn
+lucid
