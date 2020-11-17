@@ -8,6 +8,9 @@ For visuals, click [here](https://ai.renyi.hu/visualizing-transfer-learning/inde
 
 # Setup
 
+Previous setup was out of date and got removed. Instructions coming with an upcoming commit..
+
+<!-- 
 ## Code and data
 
 The repo contains some large files with git lfs, so don't be worry if 
@@ -28,7 +31,7 @@ conda env create --file environment.yml
 Pip
 ```bash
 pip install -r requirements.txt
-```
+``` -->
 
 # Research
 
