@@ -9,9 +9,10 @@ dependencies:
   - c-ares=1.16.1=h7b6447c_0
   - ca-certificates=2020.10.14=0
   - certifi=2020.6.20=pyhd3eb1b0_3
-  - cudatoolkit=10.0.130=0
-  - cudnn=7.6.5=cuda10.0_0
-  - cupti=10.0.130=0
+  - cudatoolkit=10.1.243=h6bb024c_0
+  - cudnn=7.6.5=cuda10.1_0
+  - cupti=10.1.168=0
+  - gast=0.4.0=py_0
   - google-pasta=0.2.0=py_0
   - h5py=2.10.0=py36hd6299e0_1
   - hdf5=1.10.6=hb1b8bf9_0
@@ -33,17 +34,19 @@ dependencies:
   - ncurses=6.2=he6710b0_1
   - numpy-base=1.19.2=py36hfa32c7d_0
   - openssl=1.1.1h=h7b6447c_0
-  - opt_einsum=3.1.0=py_0
   - pip=20.2.4=py36h06a4308_0
   - python=3.6.12=hcff3b4d_2
   - readline=8.0=h7b6447c_0
   - setuptools=50.3.1=py36h06a4308_1
   - six=1.15.0=py36h06a4308_0
   - sqlite=3.33.0=h62c20be_0
-  - tensorflow=1.15.0=gpu_py36h5a509aa_0
-  - tensorflow-base=1.15.0=gpu_py36h9dcbed7_0
+  - tensorboard=1.14.0=py36hf484d3e_0
+  - tensorflow=1.14.0=gpu_py36h3fb9ad6_0
+  - tensorflow-base=1.14.0=gpu_py36he45bfe2_0
+  - tensorflow-estimator=1.14.0=py_0
   - tk=8.6.10=hbc83047_0
-  - wheel=0.35.1=py_0
+  - werkzeug=1.0.1=py_0
+  - wheel=0.35.1=pyhd3eb1b0_0
   - wrapt=1.12.1=py36h7b6447c_1
   - xz=5.2.5=h7b6447c_0
   - zipp=3.4.0=pyhd3eb1b0_0
@@ -65,7 +68,6 @@ dependencies:
     - entrypoints==0.3
     - filelock==3.0.12
     - future==0.18.2
-    - gast==0.4.0
     - grpcio==1.33.2
     - idna==2.10
     - imageio==2.9.0
@@ -133,8 +135,6 @@ dependencies:
     - scipy==1.5.4
     - send2trash==1.5.0
     - shapely==1.7.1
-    - tensorboard==1.14.0
-    - tensorflow-estimator==1.14.0
     - tensorflow-gpu==1.14.0
     - termcolor==1.1.0
     - terminado==0.9.1
@@ -148,6 +148,5 @@ dependencies:
     - urllib3==1.26.2
     - wcwidth==0.2.5
     - webencodings==0.5.1
-    - werkzeug==1.0.1
     - widgetsnbextension==3.5.1
 prefix: /home/gergopool/anaconda3/envs/lucid
