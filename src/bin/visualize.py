@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import tensorflow as tf
+from keras import backend as K
 from datetime import datetime
 
 if './' not in sys.path:
@@ -37,8 +38,17 @@ def _get_layer_info(path):
         data.append([layer_name, n_channels])
     return data
 
+def set_sess():
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = tf.Session(config=config)
+    K.set_session(sess)
 
 def run(pb_path, save_dir, layer_info_path, use_date):
+
+    # Allocating minimal memory
+    set_sess()
+
     # Create save directory
     filename = os.path.split(pb_path)[1][:-3]
     save_dir = _create_dir(save_dir, subfolder=filename, use_date=use_date)
