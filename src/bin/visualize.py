@@ -34,8 +34,7 @@ def _get_layer_info(path):
     for line in lines:
         layer_name, n_channels = line.split(' ')
         n_channels = int(n_channels)
-        if 'Logits' in layer_name:
-            data.append([layer_name, n_channels])
+        data.append([layer_name, n_channels])
     return data
 
 
