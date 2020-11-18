@@ -56,5 +56,6 @@ class Visualizer:
                                   obj,
                                   param_f=self.param_f,
                                   thresholds=[self.threshold],
+                                  use_fixed_seed=True,
                                   verbose=False)
         return np.array(image[0][0])
