@@ -63,9 +63,9 @@ class VisController:
         b = False
         b = b or v is None
         b = b or v == 'None'
-        b = b or v == ''
+        b = b or v == 'y'
         b = b or v == -1
-        returnb
+        return b
 
     def get_images(self, force=False, verbose=False, **kwargs):
         w = True
