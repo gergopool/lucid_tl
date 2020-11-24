@@ -59,9 +59,19 @@ class VisController:
                              axis=1)
         return df
 
+    def _isnull(self, v):
+        b = False
+        b = b or v is None
+        b = b or v == 'None'
+        b = b or v == ''
+        b = b or v == -1
+        returnb
+
     def get_images(self, force=False, verbose=False, **kwargs):
         w = True
         for column, value in kwargs.items():
+            if self._isnull(value):
+                continue
             try:
                 look_up_series = self.df[column].astype(str).str.lower()
                 look_up_value = str(value).lower()
