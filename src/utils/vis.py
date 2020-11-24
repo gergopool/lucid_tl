@@ -68,7 +68,7 @@ class VisController:
         return b
 
     def get_images(self, force=False, verbose=False, **kwargs):
-        w = pd.Series([True] * len(self.df)]) 
+        w = pd.Series([True] * len(self.df)) 
         for column, value in kwargs.items():
             if self._isnull(value):
                 continue
