@@ -18,7 +18,7 @@ from src.utils import get_config
 
 def _parse_args(args):
     parser = argparse.ArgumentParser(description='Simple settings.')
-    parser.add_argument('n', help='Number of batches', type=int)
+    parser.add_argument('n', help='Number of images', type=int)
     parser.add_argument('--pre-pb', help='The path to the pre train pb model file', default='archive/imagenet.pb')
     parser.add_argument('--post-pb', help='The path to the post train pb model file', default='archive/sgd.pb')
     parser.add_argument('--batch-size', help='Batch size', default=25)
@@ -50,7 +50,7 @@ def _get_models(conf, models, batch_size):
             in models.items()}
     return models
 
-def simulate(n, gen, models, layers):
+def simulate(n, all_imgs, models, layers):
 
     results = []
 
@@ -62,7 +62,7 @@ def simulate(n, gen, models, layers):
 
             # Predict
             for i in range(n):
-                imgs, _ = gen[i]
+                imgs= all_imgs[i]
                 pred = model.predict(imgs, preprocess=False)[0]
                 pred = pred.reshape(len(imgs), -1)
                 preds[model_name].extend(pred)
@@ -79,7 +79,7 @@ def simulate(n, gen, models, layers):
         X = None
         Y = None
         dist = None
-        
+
         gc.collect()
 
     series = pd.Series(results, index=layers)
@@ -94,6 +94,12 @@ def _provide_save_path(save_dir, n):
     os.makedirs(folder, exist_ok=True)
     return filepath
 
+def _get_imgs(gen, n_batches):
+    imgs = []
+    for i in range(n_batches):
+        imgs.append(gen[i][0])
+    return imgs
+
 def run(args):
 
     models = {'pre' : args.pre_pb, 'post' : args.post_pb}
@@ -102,15 +108,18 @@ def run(args):
 
     n_batches = args.n // args.batch_size
     gen = _get_gen(conf, args.batch_size)
+    imgs = _get_imgs(gen, n_batches)
     models = _get_models(conf, models, args.batch_size)
     save_path = _provide_save_path(args.save_dir, args.n)
 
     df = pd.DataFrame()
     for i in tqdm(range(100)):
-        results = simulate(n_batches, gen, models, layers)
+        gen.on_epoch_end() # shuffle
+        imgs = _get_imgs(gen, n_batches)
+        results = simulate(n_batches, imgs, models, layers)
         df = df.append(results)
         df.to_csv(save_path, index=False)
-        gen.on_epoch_end() # shuffle
+
         
 
 
