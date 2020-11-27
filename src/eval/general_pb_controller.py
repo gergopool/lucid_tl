@@ -41,6 +41,16 @@ class GeneralPbController(ABC):
         batch_size = 32 if 'batch_size' not in conf else conf['batch_size']
         return cls(conf['x'], conf['y'], conf['target_shape'], batch_size)
 
+    @property
+    def avaiable_layers(self):
+        return self.nn_evaluator.y_names
+
+    @property
+    def layer_info(self):
+        y_names = self.nn_evaluator.y_names
+        channel_counts = self.nn_evaluator.channel_counts
+        return pd.DataFrame({'layer' : y_names, 'n_channels' : channel_counts})
+
     # ==============================================================
     # PUBLIC
     # ==============================================================
@@ -70,21 +80,16 @@ class GeneralPbController(ABC):
         raise NotImplementedError('Decoding not implemented.')
 
     def filter_activations(self, batch_neurons, global_i=None, **kwargs):
-        layer_i, channel_i = self._get_layer_n_channel_index(
+        layer_i, channel = self._get_layer_n_channel_index(
             global_i, **kwargs)
-        activations = batch_neurons[layer_i][..., channel_i]
+        activations = batch_neurons[layer_i][..., channel]
         return activations
 
-    def get_weights(self, global_i=None, **kwargs):
-        layer_i, channel_i = self._get_layer_n_channel_index(
+    def weights(self, global_i=None, **kwargs):
+        layer_i, channel = self._get_layer_n_channel_index(
             global_i, **kwargs)
-        return self.nn_evaluator.weights[layer_i][..., channel_i]
+        return self.nn_evaluator.weights[layer_i][..., channel]
 
-    def get_layer_info(self):
-        y_names = self.nn_evaluator.y_names
-        channel_counts = self.nn_evaluator.channel_counts
-        info = {name: c for (name, c) in zip(y_names, channel_counts)}
-        return info
 
     def get_no_neurons(self):
         return np.sum(self.nn_evaluator.channel_counts)
@@ -96,8 +101,8 @@ class GeneralPbController(ABC):
     def _get_layer_n_channel_index(self,
                                    global_i=None,
                                    layer_i=None,
-                                   layer_name=None,
-                                   channel_i=None):
+                                   layer=None,
+                                   channel=None):
 
         if global_i is not None:
             condition = self.index_map.global_i == global_i
@@ -108,23 +113,23 @@ class GeneralPbController(ABC):
                         global_i))
             match = match_df.iloc[0]
             layer_i = match.layer_i
-            channel_i = match.channel_i
+            channel = match.channel
 
-        if layer_name is not None:
-            condition = self.index_map.layer_name == layer_name
+        if layer is not None:
+            condition = self.index_map.layer == layer
             match_df = self.index_map[condition]
             if not len(match_df):
                 raise ValueError(
                     'Layer name {} does not exist in network.'.format(
-                        global_i))
+                        layer))
             match = match_df.iloc[0]
             layer_i = match.layer_i
 
-        if channel_i is None:
+        if channel is None:
             raise ValueError('Please also provide the relative index \
                     of the neuron within the layer.')
 
-        return layer_i, channel_i
+        return layer_i, channel
 
     def _create_index_map(self):
         y_names = self.nn_evaluator.y_names
@@ -136,10 +141,10 @@ class GeneralPbController(ABC):
                                                       channel_counts)):
             counts = np.arange(channel_count)
             df = pd.DataFrame({
-                'layer_name': y_name,
+                'layer': y_name,
                 'layer_i': layer_i,
                 'global_i': counts + global_i,
-                'channel_i': counts
+                'channel': counts
             })
             dataframes.append(df)
             global_i += channel_count
