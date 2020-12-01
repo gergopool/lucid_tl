@@ -4,3 +4,7 @@ def imagenet_preprocess(img):
 
 def robi_custom_preprocess(img):
     return img/255.
+
+def tensorflow_preporcess(img):
+    return img-117
+
