@@ -27,8 +27,7 @@ celeba_augment = transforms.Compose([
     transforms.RandomRotation(10),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
-    #transforms.Normalize((mean, mean, mean), (std, std, std))
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    transforms.Normalize((mean, mean, mean), (std, std, std))
 ])
 
 celeba_preprocess = transforms.Compose([
@@ -36,7 +35,6 @@ celeba_preprocess = transforms.Compose([
     transforms.Resize((256,256)),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
-    #transforms.Normalize((mean, mean, mean), (std, std, std))
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    transforms.Normalize((mean, mean, mean), (std, std, std))
 ])
 
