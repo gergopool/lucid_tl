@@ -16,8 +16,6 @@ def get_preprocess_func(str_form):
 
 
 shift = 117
-mean = shift/127.5-0.5
-std = 1/256.
 
 celeba_augment = transforms.Compose([
     transforms.ToPILImage(),
@@ -27,7 +25,7 @@ celeba_augment = transforms.Compose([
     transforms.RandomRotation(10),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
-    transforms.Normalize((mean, mean, mean), (std, std, std))
+    lambda x: x * 255 - shift
 ])
 
 celeba_preprocess = transforms.Compose([
@@ -35,6 +33,6 @@ celeba_preprocess = transforms.Compose([
     transforms.Resize((256,256)),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
-    transforms.Normalize((mean, mean, mean), (std, std, std))
+    lambda x: x * 255 - shift
 ])
 

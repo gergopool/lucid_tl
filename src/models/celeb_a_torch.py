@@ -5,8 +5,9 @@ from lucent.modelzoo import inceptionv1
 
 
 class CelebAModel(inceptionv1):
-    def __init__(self, n_features=40, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, n_features=40, pretrained=True, **kwargs):
+        super().__init__(pretrained=pretrained, **kwargs)
+
         self.logits = nn.Linear(
             in_features=1024, out_features=n_features, bias=True)
         self.sigmoid = nn.Sigmoid()
@@ -194,7 +195,7 @@ class CelebAModel(inceptionv1):
         ''' Freeze the CNN layers, everything but the last layers '''
         updateable_params = []
         for name, child in self.named_children():
-            req = name.startswith('softmax2_pre_activation_matmul')
+            req = name.startswith('logits')
             for param in child.parameters():
                 param.requires_grad = req
                 if req:
