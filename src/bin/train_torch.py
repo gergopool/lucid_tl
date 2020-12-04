@@ -62,10 +62,12 @@ def _precision(labels, preds):
     precision = torch.sum(precision) / torch.sum(preds)
     return precision
 
+
 def _accuracy(labels, preds):
     equality = torch.sum(labels == preds)
     accuracy = equality / labels.nelement()
     return accuracy
+
 
 def _init_metrics():
     metrics = ['loss', 'recall', 'precision', 'accuracy']
@@ -87,6 +89,7 @@ def _update_running_metrics(orig, new):
         orig[k] += new[k]
     return orig
 
+
 def train_multilabel(datasets, save_folder, conf, finetune=False):
 
     val_acc_history = []
@@ -95,7 +98,9 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
     save_prefix = conf.train.optimizer
 
     # Define model
-    model = CelebAModel(conf.train.n_features)
+    model = CelebAModel(conf.train.n_features,
+                        pretrained=True,
+                        redirected_ReLU=False)
     if not finetune:
         print('Loading in finetuned network..')
         model.load_state_dict(torch.load(conf.path.finetuned))
@@ -115,15 +120,15 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
         for phase in ['train', 'val']:
 
             running_metrics = _init_metrics()
-            shuffle = phase=='train'
+            shuffle = phase == 'train'
             data_loader = DataLoader(datasets[phase],
-                batch_size=conf.train.batch_size,
-                shuffle=shuffle,
-                num_workers=4,
-                prefetch_factor=5,
-                pin_memory=True)
+                                     batch_size=conf.train.batch_size,
+                                     shuffle=shuffle,
+                                     num_workers=4,
+                                     prefetch_factor=5,
+                                     pin_memory=True)
             n_iter = np.ceil(len(data_loader.dataset) / data_loader.batch_size)
-            
+
             kbar = pkbar.Kbar(target=n_iter,
                               epoch=epoch,
                               num_epochs=num_epochs,
@@ -166,8 +171,8 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
             for name, value in running_metrics.items():
                 if name != 'loss':
                     value = value.detach().cpu().numpy()
-                epoch_data[phase+'_'+name] = value / n_iter
-            
+                epoch_data[phase + '_' + name] = value / n_iter
+
         stats = stats.append(epoch_data, ignore_index=True)
         save_path = os.path.join(save_folder, 'training_log.csv')
         stats.to_csv(save_path, index=False)
