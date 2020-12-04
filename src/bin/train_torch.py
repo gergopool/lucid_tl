@@ -124,8 +124,8 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
             data_loader = DataLoader(datasets[phase],
                                      batch_size=conf.train.batch_size,
                                      shuffle=shuffle,
-                                     num_workers=4,
-                                     prefetch_factor=5,
+                                     num_workers=6,
+                                     prefetch_factor=10,
                                      pin_memory=True)
             n_iter = np.ceil(len(data_loader.dataset) / data_loader.batch_size)
 
@@ -184,6 +184,10 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
                 filename = save_prefix + str(epoch + 1) + '.pt'
                 path = os.path.join(save_folder, filename)
                 torch.save(model.state_dict(), path)
+
+            if cond2:
+                for g in optimizer.param_groups:
+                    g['lr'] /= 1.4142
 
         print()
 
