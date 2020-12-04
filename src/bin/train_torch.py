@@ -16,7 +16,7 @@ if './' not in sys.path:
 
 from src.utils.config import get_config
 from src.generators.torch_gen import CelebAGenerator
-from src.models.celeb_a_torch import CelebAModel
+from src.models.celeb_a_torch import InceptionV1
 
 
 def _parse_args(args):
@@ -98,7 +98,7 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
     save_prefix = conf.train.optimizer
 
     # Define model
-    model = CelebAModel(conf.train.n_features,
+    model = InceptionV1(conf.train.n_features,
                         pretrained=True,
                         redirected_ReLU=False)
     if not finetune:

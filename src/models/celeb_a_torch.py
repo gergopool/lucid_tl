@@ -1,15 +1,198 @@
+"""
+Original work by ProGamerGov at
+https://github.com/ProGamerGov/neural-dream/blob/master/neural_dream/models/inception/inception5h.py
+
+The MIT License (MIT)
+
+Copyright (c) 2020 ProGamerGov
+
+Copyright (c) 2015 Justin Johnson
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+from __future__ import absolute_import, division, print_function
+
 import torch
-from torch import nn
+import torch.nn as nn
 import torch.nn.functional as F
-from lucent.modelzoo import inceptionv1
+from lucent.modelzoo.inceptionv1 import helper_layers
 
 
-class CelebAModel(inceptionv1):
-    def __init__(self, n_features=40, pretrained=True, **kwargs):
-        super().__init__(pretrained=pretrained, **kwargs)
+model_urls = {
+    # InceptionV1 model used in Lucid examples, converted by ProGamerGov
+    'inceptionv1': 'https://github.com/ProGamerGov/pytorch-old-tensorflow-models/raw/master/inception5h.pth',
+}
 
-        self.logits = nn.Linear(
-            in_features=1024, out_features=n_features, bias=True)
+
+class InceptionV1(nn.Module):
+
+    def __init__(self, n_features, pretrained=False, progress=True, redirected_ReLU=True):
+        super(InceptionV1, self).__init__()
+        self.conv2d0_pre_relu_conv = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=(7, 7), stride=(2, 2), groups=1, bias=True)
+        self.conv2d1_pre_relu_conv = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.conv2d2_pre_relu_conv = nn.Conv2d(in_channels=64, out_channels=192, kernel_size=(3, 3), stride=(1, 1), groups=1, bias=True)
+        self.mixed3a_1x1_pre_relu_conv = nn.Conv2d(in_channels=192, out_channels=64, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed3a_3x3_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=192, out_channels=96, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed3a_5x5_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=192, out_channels=16, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed3a_pool_reduce_pre_relu_conv = nn.Conv2d(in_channels=192, out_channels=32, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed3a_3x3_pre_relu_conv = nn.Conv2d(in_channels=96, out_channels=128, kernel_size=(3, 3), stride=(1, 1), groups=1, bias=True)
+        self.mixed3a_5x5_pre_relu_conv = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(5, 5), stride=(1, 1), groups=1, bias=True)
+        self.mixed3b_1x1_pre_relu_conv = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed3b_3x3_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed3b_5x5_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=256, out_channels=32, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed3b_pool_reduce_pre_relu_conv = nn.Conv2d(in_channels=256, out_channels=64, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed3b_3x3_pre_relu_conv = nn.Conv2d(in_channels=128, out_channels=192, kernel_size=(3, 3), stride=(1, 1), groups=1, bias=True)
+        self.mixed3b_5x5_pre_relu_conv = nn.Conv2d(in_channels=32, out_channels=96, kernel_size=(5, 5), stride=(1, 1), groups=1, bias=True)
+        self.mixed4a_1x1_pre_relu_conv = nn.Conv2d(in_channels=480, out_channels=192, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4a_3x3_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=480, out_channels=96, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4a_5x5_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=480, out_channels=16, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4a_pool_reduce_pre_relu_conv = nn.Conv2d(in_channels=480, out_channels=64, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4a_3x3_pre_relu_conv = nn.Conv2d(in_channels=96, out_channels=204, kernel_size=(3, 3), stride=(1, 1), groups=1, bias=True)
+        self.mixed4a_5x5_pre_relu_conv = nn.Conv2d(in_channels=16, out_channels=48, kernel_size=(5, 5), stride=(1, 1), groups=1, bias=True)
+        self.mixed4b_1x1_pre_relu_conv = nn.Conv2d(in_channels=508, out_channels=160, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4b_3x3_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=508, out_channels=112, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4b_5x5_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=508, out_channels=24, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4b_pool_reduce_pre_relu_conv = nn.Conv2d(in_channels=508, out_channels=64, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4b_3x3_pre_relu_conv = nn.Conv2d(in_channels=112, out_channels=224, kernel_size=(3, 3), stride=(1, 1), groups=1, bias=True)
+        self.mixed4b_5x5_pre_relu_conv = nn.Conv2d(in_channels=24, out_channels=64, kernel_size=(5, 5), stride=(1, 1), groups=1, bias=True)
+        self.mixed4c_1x1_pre_relu_conv = nn.Conv2d(in_channels=512, out_channels=128, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4c_3x3_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=512, out_channels=128, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4c_5x5_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=512, out_channels=24, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4c_pool_reduce_pre_relu_conv = nn.Conv2d(in_channels=512, out_channels=64, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4c_3x3_pre_relu_conv = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=(3, 3), stride=(1, 1), groups=1, bias=True)
+        self.mixed4c_5x5_pre_relu_conv = nn.Conv2d(in_channels=24, out_channels=64, kernel_size=(5, 5), stride=(1, 1), groups=1, bias=True)
+        self.mixed4d_1x1_pre_relu_conv = nn.Conv2d(in_channels=512, out_channels=112, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4d_3x3_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=512, out_channels=144, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4d_5x5_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=512, out_channels=32, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4d_pool_reduce_pre_relu_conv = nn.Conv2d(in_channels=512, out_channels=64, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4d_3x3_pre_relu_conv = nn.Conv2d(in_channels=144, out_channels=288, kernel_size=(3, 3), stride=(1, 1), groups=1, bias=True)
+        self.mixed4d_5x5_pre_relu_conv = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(5, 5), stride=(1, 1), groups=1, bias=True)
+        self.mixed4e_1x1_pre_relu_conv = nn.Conv2d(in_channels=528, out_channels=256, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4e_3x3_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=528, out_channels=160, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4e_5x5_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=528, out_channels=32, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4e_pool_reduce_pre_relu_conv = nn.Conv2d(in_channels=528, out_channels=128, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed4e_3x3_pre_relu_conv = nn.Conv2d(in_channels=160, out_channels=320, kernel_size=(3, 3), stride=(1, 1), groups=1, bias=True)
+        self.mixed4e_5x5_pre_relu_conv = nn.Conv2d(in_channels=32, out_channels=128, kernel_size=(5, 5), stride=(1, 1), groups=1, bias=True)
+        self.mixed5a_1x1_pre_relu_conv = nn.Conv2d(in_channels=832, out_channels=256, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed5a_3x3_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=832, out_channels=160, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed5a_5x5_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=832, out_channels=48, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed5a_pool_reduce_pre_relu_conv = nn.Conv2d(in_channels=832, out_channels=128, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed5a_3x3_pre_relu_conv = nn.Conv2d(in_channels=160, out_channels=320, kernel_size=(3, 3), stride=(1, 1), groups=1, bias=True)
+        self.mixed5a_5x5_pre_relu_conv = nn.Conv2d(in_channels=48, out_channels=128, kernel_size=(5, 5), stride=(1, 1), groups=1, bias=True)
+        self.mixed5b_1x1_pre_relu_conv = nn.Conv2d(in_channels=832, out_channels=384, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed5b_3x3_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=832, out_channels=192, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed5b_5x5_bottleneck_pre_relu_conv = nn.Conv2d(in_channels=832, out_channels=48, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed5b_pool_reduce_pre_relu_conv = nn.Conv2d(in_channels=832, out_channels=128, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
+        self.mixed5b_3x3_pre_relu_conv = nn.Conv2d(in_channels=192, out_channels=384, kernel_size=(3, 3), stride=(1, 1), groups=1, bias=True)
+        self.mixed5b_5x5_pre_relu_conv = nn.Conv2d(in_channels=48, out_channels=128, kernel_size=(5, 5), stride=(1, 1), groups=1, bias=True)
+        self.logits = nn.Linear(in_features=1024, out_features=n_features, bias=True)
+        
+        self.add_layers(redirected_ReLU)
+
+        if pretrained:
+            self.load_state_dict(torch.hub.load_state_dict_from_url(model_urls['inceptionv1'], progress=progress), strict=False)
+
+    def add_layers(self, redirected_ReLU=True):
+        if redirected_ReLU:
+            relu = helper_layers.RedirectedReluLayer
+        else:
+            relu = helper_layers.ReluLayer
+        self.conv2d0 = relu()
+        self.maxpool0 = helper_layers.MaxPool2dLayer()
+        self.conv2d1 = relu()
+        self.conv2d2 = relu()
+        self.maxpool1 = helper_layers.MaxPool2dLayer()
+        self.mixed3a_pool = helper_layers.MaxPool2dLayer()
+        self.mixed3a_1x1 = relu()
+        self.mixed3a_3x3_bottleneck = relu()
+        self.mixed3a_5x5_bottleneck = relu()
+        self.mixed3a_pool_reduce = relu()
+        self.mixed3a_3x3 = relu()
+        self.mixed3a_5x5 = relu()
+        self.mixed3a = helper_layers.CatLayer()
+        self.mixed3b_pool = helper_layers.MaxPool2dLayer()
+        self.mixed3b_1x1 = relu()
+        self.mixed3b_3x3_bottleneck = relu()
+        self.mixed3b_5x5_bottleneck = relu()
+        self.mixed3b_pool_reduce = relu()
+        self.mixed3b_3x3 = relu()
+        self.mixed3b_5x5 = relu()
+        self.mixed3b = helper_layers.CatLayer()
+        self.maxpool4 = helper_layers.MaxPool2dLayer()
+        self.mixed4a_pool = helper_layers.MaxPool2dLayer()
+        self.mixed4a_1x1 = relu()
+        self.mixed4a_3x3_bottleneck = relu()
+        self.mixed4a_5x5_bottleneck = relu()
+        self.mixed4a_pool_reduce = relu()
+        self.mixed4a_3x3 = relu()
+        self.mixed4a_5x5 = relu()
+        self.mixed4a = helper_layers.CatLayer()
+        self.mixed4b_pool = helper_layers.MaxPool2dLayer()
+        self.mixed4b_1x1 = relu()
+        self.mixed4b_3x3_bottleneck = relu()
+        self.mixed4b_5x5_bottleneck = relu()
+        self.mixed4b_pool_reduce = relu()
+        self.mixed4b_3x3 = relu()
+        self.mixed4b_5x5 = relu()
+        self.mixed4b = helper_layers.CatLayer()
+        self.mixed4c_pool = helper_layers.MaxPool2dLayer()
+        self.mixed4c_1x1 = relu()
+        self.mixed4c_3x3_bottleneck = relu()
+        self.mixed4c_5x5_bottleneck = relu()
+        self.mixed4c_pool_reduce = relu()
+        self.mixed4c_3x3 = relu()
+        self.mixed4c_5x5 = relu()
+        self.mixed4c = helper_layers.CatLayer()
+        self.mixed4d_pool = helper_layers.MaxPool2dLayer()
+        self.mixed4d_1x1 = relu()
+        self.mixed4d_3x3_bottleneck = relu()
+        self.mixed4d_5x5_bottleneck = relu()
+        self.mixed4d_pool_reduce = relu()
+        self.mixed4d_3x3 = relu()
+        self.mixed4d_5x5 = relu()
+        self.mixed4d = helper_layers.CatLayer()
+        self.mixed4e_pool = helper_layers.MaxPool2dLayer()
+        self.mixed4e_1x1 = relu()
+        self.mixed4e_3x3_bottleneck = relu()
+        self.mixed4e_5x5_bottleneck = relu()
+        self.mixed4e_pool_reduce = relu()
+        self.mixed4e_3x3 = relu()
+        self.mixed4e_5x5 = relu()
+        self.mixed4e = helper_layers.CatLayer()
+        self.maxpool10 = helper_layers.MaxPool2dLayer()
+        self.mixed5a_pool = helper_layers.MaxPool2dLayer()
+        self.mixed5a_1x1 = relu()
+        self.mixed5a_3x3_bottleneck = relu()
+        self.mixed5a_5x5_bottleneck = relu()
+        self.mixed5a_pool_reduce = relu()
+        self.mixed5a_3x3 = relu()
+        self.mixed5a_5x5 = relu()
+        self.mixed5a = helper_layers.CatLayer()
+        self.mixed5b_pool = helper_layers.MaxPool2dLayer()
+        self.mixed5b_1x1 = relu()
+        self.mixed5b_3x3_bottleneck = relu()
+        self.mixed5b_5x5_bottleneck = relu()
+        self.mixed5b_pool_reduce = relu()
+        self.mixed5b_3x3 = relu()
+        self.mixed5b_5x5 = relu()
+        self.mixed5b = helper_layers.CatLayer()
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
@@ -190,7 +373,6 @@ class CelebAModel(inceptionv1):
         sigmoid = self.sigmoid(logits)
         return sigmoid
 
-
     def freeze(self):
         ''' Freeze the CNN layers, everything but the last layers '''
         updateable_params = []
@@ -207,7 +389,8 @@ class CelebAModel(inceptionv1):
         for param in self.features.parameters():
             param.requires_grad = True
 
+
 if __name__ == "__main__":
-    
-    model = CelebAModel()
+    model = InceptionV1(40, pretrained=True, redirected_ReLU=False)
     print(model)
+    torch.save(model.state_dict(), './archive/imagenet.pt')
