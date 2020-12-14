@@ -101,7 +101,7 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
     model = InceptionV1(conf.train.n_features,
                         pretrained=conf.path.finetuned,
                         redirected_ReLU=False)
-    if not finetune:
+    if not finetune and conf.path.finetuned is not None:
         print('Loading in finetuned network..')
         model.load_state_dict(torch.load(conf.path.finetuned))
         print('Done.')
