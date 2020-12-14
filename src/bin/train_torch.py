@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 if './' not in sys.path:
     sys.path.append('./')
 
-from src.utils.config import get_config
+from src.utils.config import get_config, save_full_ini
 from src.generators.torch_gen import CelebAGenerator
 from src.models.celeb_a_torch import InceptionV1
 
@@ -92,14 +92,14 @@ def _update_running_metrics(orig, new):
 
 def train_multilabel(datasets, save_folder, conf, finetune=False):
 
-    val_acc_history = []
     stats = pd.DataFrame()
     device = _get_device()
     save_prefix = conf.train.optimizer
 
     # Define model
+    torch.manual_seed(conf.train.model_seed)
     model = InceptionV1(conf.train.n_features,
-                        pretrained=True,
+                        pretrained=conf.path.finetuned,
                         redirected_ReLU=False)
     if not finetune:
         print('Loading in finetuned network..')
@@ -112,6 +112,7 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
     optimizer = _optimizer(model, conf, criterion, updatable_params, finetune)
 
     num_epochs = 1 if finetune else conf.train.epochs
+    torch.manual_seed(conf.train.grad_seed)
 
     for epoch in range(num_epochs):
 
@@ -196,7 +197,9 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
         torch.save(model.state_dict(), path)
 
 
-def run(conf, finetune):
+def run(conf_path, finetune):
+
+    conf = get_config(conf_path)
 
     # Create generators
     datasets = {
@@ -204,8 +207,10 @@ def run(conf, finetune):
         for x in ['train', 'val']
     }
 
-    # Get new training directory and save weights before training
+    # Get new training directory
     save_folder = create_train_directory(conf.path.models_root)
+    conf_filename = os.path.split(conf_path)[-1]
+    save_full_ini(conf_path, os.path.join(save_folder, conf_filename))
 
     train_multilabel(datasets, save_folder, conf, finetune=finetune)
 
@@ -215,8 +220,8 @@ def main(args=None):
         args = sys.argv[1:]
     args = _parse_args(args)
 
-    conf = get_config(args.config)
-    run(conf, args.finetune)
+    
+    run(args.config, args.finetune)
 
 
 if __name__ == '__main__':

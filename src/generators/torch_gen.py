@@ -6,7 +6,6 @@ import os
 from torch.utils.data import Dataset
 from matplotlib import pyplot as plt
 
-from src.utils import get_preprocess_func
 from src.utils import celeba_augment as augment_trans
 from src.utils import celeba_preprocess as preprocess_trans
 
@@ -34,8 +33,7 @@ class CelebAGenerator(Dataset):
     def __init__(self,
                  csv,
                  transform=None,
-                 target_shape=(224, 224, 3),
-                 preprocess_func='tf'):
+                 target_shape=(224, 224, 3)):
 
         # Read in csv and define root directory
         self.df = pd.read_csv(csv)
@@ -48,7 +46,6 @@ class CelebAGenerator(Dataset):
         self.df.img = self.df.img.apply(lambda x: os.path.join(self.root, x))
 
         self.target_shape = target_shape    
-        self.preprocess_func = get_preprocess_func(preprocess_func)
 
     @classmethod
     def from_conf(cls, conf, is_train):
@@ -56,8 +53,7 @@ class CelebAGenerator(Dataset):
         transform = augment_trans if is_train else preprocess_trans
         return cls(csv=csv,
                    transform=transform,
-                   target_shape=conf.train.image_shape,
-                   preprocess_func=conf.train.preprocess_func)
+                   target_shape=conf.train.image_shape)
 
 
     def __len__(self):
