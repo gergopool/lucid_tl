@@ -6,6 +6,7 @@ import numpy as np
 from tqdm import tqdm
 import multiprocessing
 
+from lucent.optvis import param
 
 def first_look_on_imgs(imgs, rows=4, cols=8):
     fig = plt.figure(figsize=(cols * 5, rows * 5))
@@ -13,6 +14,8 @@ def first_look_on_imgs(imgs, rows=4, cols=8):
         ax = fig.add_subplot(rows, cols, i + 1, xticks=[], yticks=[])
         ax.imshow(img)
     plt.show()
+
+
 
 class VisController:
 
