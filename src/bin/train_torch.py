@@ -38,9 +38,9 @@ def _get_device():
     return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def _optimizer(model, conf, criterion, params_to_update, finetune):
+def _optimizer(model, conf, criterion, params_to_update, weight_decay=0):
     lr = conf.train.lr
-    wd = 1e-4 if finetune else 0
+    wd = weight_decay
     if conf.train.optimizer == 'sgd':
         optimizer = torch.optim.SGD(params_to_update,
                                     lr=lr,
@@ -95,6 +95,11 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
     stats = pd.DataFrame()
     device = _get_device()
     save_prefix = conf.train.optimizer
+    
+    if finetune:
+        weight_decay = 1e-3
+    else:
+        weight_decay = conf.train.weight_decay
 
     # Define model
     torch.manual_seed(conf.train.model_seed)
@@ -109,7 +114,7 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
 
     criterion = torch.nn.BCELoss()
     updatable_params = model.freeze() if finetune else model.parameters()
-    optimizer = _optimizer(model, conf, criterion, updatable_params, finetune)
+    optimizer = _optimizer(model, conf, criterion, updatable_params, weight_decay=weight_decay)
 
     num_epochs = 1 if finetune else conf.train.epochs
     torch.manual_seed(conf.train.grad_seed)
@@ -184,7 +189,7 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
             if cond2:
                 filename = save_prefix + str(epoch + 1) + '.pt'
                 path = os.path.join(save_folder, filename)
-                torch.save(model.state_dict(), path)
+                torch.save(model.state_dict(), path, _use_new_zipfile_serialization=False)
 
             if cond2:
                 for g in optimizer.param_groups:
