@@ -186,7 +186,7 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
         if not finetune:
             cond1 = epoch < 10
             cond2 = (epoch + 1) % 10 == 0
-            if cond1 or cond2:
+            if cond2:
                 filename = save_prefix + str(epoch + 1) + '.pt'
                 path = os.path.join(save_folder, filename)
                 torch.save(model.state_dict(), path, _use_new_zipfile_serialization=False)
