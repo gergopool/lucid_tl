@@ -33,12 +33,15 @@ def run(model_name, save_dir):
     reverse_layer_info = model.layer_info[::-1]
     for layer, n_channels in tqdm(reverse_layer_info):
         for i in tqdm(range(n_channels)):
-            layer_n_channel = layer+':'+str(i)
-            img = model.lucid(layer_n_channel)
-
             local_dir = os.path.join(save_dir, layer)
             os.makedirs(local_dir, exist_ok=True)
             path = os.path.join(local_dir, str(i)+'.jpg')
+
+            if os.path.isfile(path):
+                continue
+
+            layer_n_channel = layer+':'+str(i)
+            img = model.lucid(layer_n_channel)
             img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             cv2.imwrite(path, img)
 
