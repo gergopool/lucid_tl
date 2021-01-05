@@ -12,14 +12,14 @@ if './' not in sys.path:
 def _parse_args(args):
     parser = argparse.ArgumentParser(description='Simple settings.')
     parser.add_argument('model_name', help='Name of the model')
-    parser.add_argument('--save-dir', '-d', help='The path to the storage folder', default='results')
+    parser.add_argument('--save-dir', '-d', help='The path to the storage folder', default='results/all_lucid_vis')
     return parser.parse_args(args)
 
 def _create_dir(save_dir, subfolder=None):
     os.makedirs(save_dir, exist_ok=True)
     if subfolder is not None:
-        date = datetime.now().strftime('%Y-%m-%d-%H%M%S')
-        subfolder = subfolder+'-'+date
+        #date = datetime.now().strftime('%Y-%m-%d-%H%M%S')
+        #subfolder = subfolder+'-'+date
         save_dir = os.path.join(save_dir, subfolder)
         os.mkdir(save_dir)
     return save_dir
