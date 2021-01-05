@@ -21,7 +21,7 @@ def _create_dir(save_dir, subfolder=None):
         #date = datetime.now().strftime('%Y-%m-%d-%H%M%S')
         #subfolder = subfolder+'-'+date
         save_dir = os.path.join(save_dir, subfolder)
-        os.mkdir(save_dir)
+        os.makedirs(save_dir, exist_ok=True)
     return save_dir
 
 def run(model_name, save_dir):
@@ -38,6 +38,7 @@ def run(model_name, save_dir):
             path = os.path.join(local_dir, str(i)+'.jpg')
 
             if os.path.isfile(path):
+                print("{} skipped.".format(path))
                 continue
 
             layer_n_channel = layer+':'+str(i)
