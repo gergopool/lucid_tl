@@ -8,10 +8,9 @@ if './' not in sys.path:
     sys.path.append('./')
 
 save_dir_root = 'results/lucid_vis_12_model'
-prefix = sys.argv[1]
+model_names = sys.argv[1].split(',')
 
-for postfix in tqdm(['gn1', 'gn2', 'gn3']):
-    model_name = prefix + '-' + postfix
+for model_name in model_names:
     model = cl.load_model(model_name)
     for layer, _ in tqdm(model.layer_info):
         save_dir = os.path.join(save_dir_root, model_name, layer)
