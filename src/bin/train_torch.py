@@ -105,10 +105,11 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
     torch.manual_seed(conf.train.model_seed)
     model = InceptionV1(conf.train.n_features,
                         pretrained=conf.path.finetuned,
-                        redirected_ReLU=False)
+                        redirected_ReLU=False,
+                        bn=conf.train.batch_norm)
     if not finetune and conf.path.finetuned is not None:
         print('Loading in finetuned network..')
-        model.load_state_dict(torch.load(conf.path.finetuned))
+        model.load_state_dict(torch.load(conf.path.finetuned), strict=False)
         print('Done.')
     model.train().to(device)
 
