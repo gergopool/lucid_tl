@@ -489,11 +489,22 @@ class InceptionV1(nn.Module):
         return sigmoid
 
     def freeze(self):
+        return self.freeze_bn() if self.bn else self.freeze_convs()
+
+    def freeze_convs(self):
+        requirement = lambda x: x.startswith("logits")
+        return self._freeze(requirement)
+
+    def freeze_bn(self):
+        requirement = lambda x: x.startswith('logits') or x.endswith('bn')
+        return self._freeze(requirement)
+
+    def _freeze(self, requirement):
         ''' Freeze the CNN layers, everything but the last layers '''
         updateable_params = []
         for name, child in self.named_children():
-            req = name.startswith('logits')
             for param in child.parameters():
+                req = requirement(name)
                 param.requires_grad = req
                 if req:
                     updateable_params.append(param)

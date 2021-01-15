@@ -132,7 +132,6 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
                                      batch_size=conf.train.batch_size,
                                      shuffle=shuffle,
                                      num_workers=6,
-                                     prefetch_factor=10,
                                      pin_memory=True)
             n_iter = np.ceil(len(data_loader.dataset) / data_loader.batch_size)
 
