@@ -184,16 +184,17 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
         stats.to_csv(save_path, index=False)
 
         if not finetune:
-            cond1 = epoch < 10
-            cond2 = (epoch + 1) % 10 == 0
-            if cond2:
+            save = (epoch + 1) % conf.train.save_frequency == 0
+            update_lr = (epoch + 1) % conf.train.lr_update_frequency == 0
+
+            if save:
                 filename = save_prefix + str(epoch + 1) + '.pt'
                 path = os.path.join(save_folder, filename)
                 torch.save(model.state_dict(), path, _use_new_zipfile_serialization=False)
 
-            if cond2:
+            if update_lr:
                 for g in optimizer.param_groups:
-                    g['lr'] /= 1.4142
+                    g['lr'] *= conf.train.lr_update_multiplier
 
         print()
 
