@@ -107,10 +107,15 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
                         pretrained=conf.path.finetuned,
                         redirected_ReLU=False,
                         bn=conf.train.batch_norm)
+    
     if not finetune and conf.path.finetuned is not None:
         print('Loading in finetuned network..')
         model.load_state_dict(torch.load(conf.path.finetuned), strict=False)
         print('Done.')
+
+        if conf.train.freeze_until is not None:
+            model.freeze_until(conf.train.freeze_until)
+
     model.train().to(device)
 
     criterion = torch.nn.BCELoss()
@@ -154,6 +159,8 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
 
                     # Get loss & prediction
                     outputs = model(inputs)
+                    print(outputs.shape, outputs.dtype, labels.shape, labels.dtype)
+                    asd
                     loss = criterion(outputs, labels)
 
                     # Metrics

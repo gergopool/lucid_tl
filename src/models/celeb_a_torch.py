@@ -499,15 +499,24 @@ class InceptionV1(nn.Module):
         requirement = lambda x: x.startswith('logits') or x.endswith('bn')
         return self._freeze(requirement)
 
-    def _freeze(self, requirement):
+    def freeze_until(self, layer):
+        ''' Freeze the CNN layers when conditions met '''
+        requirement = lambda x: x.startswith(layer)
+        return self._freeze(requirement, until_mode=True)
+
+    def _freeze(self, requirement, freeze_until=False):
         ''' Freeze the CNN layers, everything but the last layers '''
         updateable_params = []
+        names = []
         for name, child in self.named_children():
             for param in child.parameters():
-                req = requirement(name)
-                param.requires_grad = req
-                if req:
+                req_met = requirement(name)
+                learnable = req_met
+                param.requires_grad = learnable
+                if learnable:
                     updateable_params.append(param)
+                    names.append(name)
+        print('Updatable params are:\n{}'.format('\n'.join(names)))
         return updateable_params
 
     def unfreeze(self): 
