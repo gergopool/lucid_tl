@@ -159,8 +159,6 @@ def train_multilabel(datasets, save_folder, conf, finetune=False):
 
                     # Get loss & prediction
                     outputs = model(inputs)
-                    print(outputs.shape, outputs.dtype, labels.shape, labels.dtype)
-                    asd
                     loss = criterion(outputs, labels)
 
                     # Metrics
